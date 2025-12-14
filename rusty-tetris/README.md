@@ -2,7 +2,7 @@
 
 A modern Tetris implementation with a Rust/WebAssembly core and TypeScript frontend, served by a Deno backend.
 
-**[Play Live on Deno Deploy](https://rusty-tetris.mgavriliu.deno.net/)** | **[GitHub Pages](https://mgavriliu.github.io/rusty-tetris/)**
+**[Play Live on Deno Deploy](https://rusty-tetris.mgavriliu.deno.net/)** | **[GitHub Pages](https://mgavriliu.github.io/tetris/)**
 
 ## Features
 
