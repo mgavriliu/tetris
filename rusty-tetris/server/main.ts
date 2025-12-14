@@ -1,3 +1,8 @@
+import { dirname, fromFileUrl, join } from "https://deno.land/std@0.208.0/path/mod.ts";
+
+const __dirname = dirname(fromFileUrl(import.meta.url));
+const rootDir = join(__dirname, "..");
+
 interface Score {
   name: string;
   score: number;
@@ -94,13 +99,13 @@ async function handler(req: Request): Promise<Response> {
     let filePath: string;
 
     if (path === "/" || path === "/index.html") {
-      filePath = "./frontend/index.html";
+      filePath = join(rootDir, "frontend/index.html");
     } else if (path.startsWith("/pkg/")) {
-      filePath = "." + path;
+      filePath = join(rootDir, path.slice(1));
     } else if (path.startsWith("/dist/")) {
-      filePath = "./frontend" + path;
+      filePath = join(rootDir, "frontend", path);
     } else {
-      filePath = "./frontend" + path;
+      filePath = join(rootDir, "frontend", path);
     }
 
     const file = await Deno.readFile(filePath);
