@@ -2,7 +2,7 @@
 
 A modern Tetris implementation with a Rust/WebAssembly core featuring **WebGL rendering**, served by a Deno backend.
 
-**[Play Live on Deno Deploy](https://webgl-tetris--master.mgavriliu.deno.net/)** | **[GitHub Pages](https://mgavriliu.github.io/webgl-tetris/)**
+**[Play Live on Deno Deploy](https://webgl-tetris--master.mgavriliu.deno.net/)** | **[GitHub Pages](https://mgavriliu.github.io/tetris/)**
 
 ## Features
 
