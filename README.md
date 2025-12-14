@@ -4,8 +4,8 @@ Two modern Tetris implementations built with Rust/WebAssembly and Deno, differin
 
 | Project                         | Rendering         | Live Demo                                                                                                            |
 | ------------------------------- | ----------------- | -------------------------------------------------------------------------------------------------------------------- |
-| [rusty-tetris](./rusty-tetris/) | SVG (TypeScript)  | [Deno Deploy](https://rusty-tetris.mgavriliu.deno.net/) \| [GitHub Pages](https://mgavriliu.github.io/rusty-tetris/) |
-| [webgl-tetris](./webgl-tetris/) | WebGL (Rust/GLSL) | [Deno Deploy](https://webgl-tetris.mgavriliu.deno.net/) \| [GitHub Pages](https://mgavriliu.github.io/webgl-tetris/) |
+| [rusty-tetris](./rusty-tetris/) | SVG (TypeScript)  | [Deno Deploy](https://rusty-tetris.mgavriliu.deno.net/) \| [GitHub Pages](https://mgavriliu.github.io/tetris/) |
+| [webgl-tetris](./webgl-tetris/) | WebGL (Rust/GLSL) | [Deno Deploy](https://webgl-tetris.mgavriliu.deno.net/) \| [GitHub Pages](https://mgavriliu.github.io/tetris/) |
 
 ## Key Differences
 
