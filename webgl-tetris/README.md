@@ -2,6 +2,8 @@
 
 A modern Tetris implementation with a Rust/WebAssembly core featuring **WebGL rendering** with custom GLSL shaders.
 
+**[Play on GitHub Pages](https://mgavriliu.github.io/tetris/docs/)**
+
 ## Features
 
 - **Rust/WASM Game Engine**: Core game logic and WebGL rendering written in Rust
