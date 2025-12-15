@@ -8,12 +8,13 @@ use gloo_net::http::Request;
 use gloo_timers::future::TimeoutFuture;
 use serde::{Deserialize, Serialize};
 use std::rc::Rc;
+use wasm_bindgen_futures::spawn_local;
 
 const CELL_SIZE: u32 = 30;
 const BOARD_WIDTH: usize = 10;
 const BOARD_HEIGHT: usize = 20;
 // Shared API endpoint for all Tetris games
-const API_BASE: &str = "https://tetris-api.deno.dev/api";
+const API_BASE: &str = "http://localhost:8000/api";
 
 #[derive(Clone, Debug, Serialize, Deserialize, PartialEq)]
 pub struct Score {
@@ -113,6 +114,17 @@ fn App() -> Element {
         let current_state = *state.read();
         let key = evt.key();
 
+        // Prevent default for game control keys (stops arrow keys from scrolling)
+        match &key {
+            Key::ArrowUp | Key::ArrowDown | Key::ArrowLeft | Key::ArrowRight => {
+                evt.prevent_default();
+            }
+            Key::Character(c) if c == " " => {
+                evt.prevent_default();
+            }
+            _ => {}
+        }
+
         // Don't handle keys when entering name
         if *show_name_input.read() {
             return;
@@ -167,7 +179,9 @@ fn App() -> Element {
             Key::ArrowUp => { game.write().rotate(true); }
             Key::Character(ref c) if c == "x" || c == "X" => { game.write().rotate(true); }
             Key::Character(ref c) if c == "z" || c == "Z" => { game.write().rotate(false); }
+            Key::Control => { game.write().rotate(false); }
             Key::Character(ref c) if c == "c" || c == "C" => { game.write().hold(); }
+            Key::Shift => { game.write().hold(); }
             _ => {}
         }
     };
@@ -180,17 +194,12 @@ fn App() -> Element {
 
     rsx! {
         div {
-            class: "container",
+            class: "game-container",
             tabindex: "0",
             autofocus: true,
             onkeydown: onkeydown,
 
             style { {include_str!("../assets/style.css")} }
-
-            header {
-                h1 { "DIOXUS TETRIS" }
-                p { class: "subtitle", "Pure Rust + WebAssembly" }
-            }
 
             div { class: "game-area",
                 // Left panel
@@ -297,10 +306,6 @@ fn App() -> Element {
                         div { class: "stat-value", "{game_data.lines_cleared}" }
                     }
                 }
-            }
-
-            footer {
-                p { "Built with Dioxus + Rust + WebAssembly" }
             }
         }
     }
@@ -430,7 +435,7 @@ fn StartOverlay() -> Element {
             }
             text {
                 x: "{BOARD_WIDTH as u32 * CELL_SIZE / 2}",
-                y: "120",
+                y: "80",
                 text_anchor: "middle",
                 fill: "#00f5ff",
                 font_size: "28",
@@ -440,57 +445,93 @@ fn StartOverlay() -> Element {
             }
             text {
                 x: "{BOARD_WIDTH as u32 * CELL_SIZE / 2}",
-                y: "180",
+                y: "110",
                 text_anchor: "middle",
-                fill: "#fff",
+                fill: "#888",
                 font_size: "12",
                 font_family: "monospace",
-                "CONTROLS"
+                "Press SPACE or ENTER to start"
             }
+            // Controls header
+            text {
+                x: "{BOARD_WIDTH as u32 * CELL_SIZE / 2}",
+                y: "160",
+                text_anchor: "middle",
+                fill: "#9d4edd",
+                font_size: "14",
+                font_family: "monospace",
+                font_weight: "bold",
+                "Controls"
+            }
+            // Move
+            text {
+                x: "{BOARD_WIDTH as u32 * CELL_SIZE / 2}",
+                y: "190",
+                text_anchor: "middle",
+                fill: "#aaa",
+                font_size: "11",
+                font_family: "monospace",
+                "← →      Move"
+            }
+            // Soft drop
             text {
                 x: "{BOARD_WIDTH as u32 * CELL_SIZE / 2}",
                 y: "210",
                 text_anchor: "middle",
-                fill: "#888",
+                fill: "#aaa",
                 font_size: "11",
                 font_family: "monospace",
-                "Arrow Keys - Move"
+                "↓        Soft drop"
             }
+            // Hard drop
             text {
                 x: "{BOARD_WIDTH as u32 * CELL_SIZE / 2}",
                 y: "230",
                 text_anchor: "middle",
-                fill: "#888",
+                fill: "#aaa",
                 font_size: "11",
                 font_family: "monospace",
-                "Space - Hard Drop"
+                "Space    Hard drop"
             }
+            // Rotate CW
             text {
                 x: "{BOARD_WIDTH as u32 * CELL_SIZE / 2}",
                 y: "250",
                 text_anchor: "middle",
-                fill: "#888",
+                fill: "#aaa",
                 font_size: "11",
                 font_family: "monospace",
-                "Z/X - Rotate"
+                "↑ X      Rotate CW"
             }
+            // Rotate CCW
             text {
                 x: "{BOARD_WIDTH as u32 * CELL_SIZE / 2}",
                 y: "270",
                 text_anchor: "middle",
-                fill: "#888",
+                fill: "#aaa",
                 font_size: "11",
                 font_family: "monospace",
-                "C - Hold Piece"
+                "Z Ctrl   Rotate CCW"
             }
+            // Hold
             text {
                 x: "{BOARD_WIDTH as u32 * CELL_SIZE / 2}",
-                y: "320",
+                y: "290",
                 text_anchor: "middle",
-                fill: "#00f5ff",
-                font_size: "14",
+                fill: "#aaa",
+                font_size: "11",
                 font_family: "monospace",
-                "Press SPACE to start"
+                "C Shift  Hold"
+            }
+            // Pause
+            text {
+                x: "{BOARD_WIDTH as u32 * CELL_SIZE / 2}",
+                y: "310",
+                text_anchor: "middle",
+                fill: "#aaa",
+                font_size: "11",
+                font_family: "monospace",
+                "P Esc    Pause"
             }
         }
     }
@@ -537,6 +578,27 @@ fn NameInputOverlay(
     mut score_submitted: Signal<bool>,
     mut high_scores: Signal<Vec<Score>>,
 ) -> Element {
+    let submit_score_handler = move |_| {
+        let name = player_name.read().trim().to_string();
+        if !name.is_empty() {
+            let new_score = Score {
+                name: name.clone(),
+                score,
+                level,
+                lines,
+                timestamp: 0,
+            };
+            spawn_local(async move {
+                submit_score(&new_score).await;
+                let scores = fetch_high_scores().await;
+                high_scores.set(scores);
+            });
+            show_name_input.set(false);
+            score_submitted.set(true);
+            player_name.set(String::new());
+        }
+    };
+
     rsx! {
         div { class: "name-input-overlay",
             div { class: "name-input-box",
@@ -546,9 +608,11 @@ fn NameInputOverlay(
                     r#type: "text",
                     placeholder: "Enter your name",
                     maxlength: "20",
+                    autofocus: true,
                     value: "{player_name}",
                     oninput: move |evt| player_name.set(evt.value()),
                     onkeydown: move |evt| {
+                        evt.stop_propagation();
                         if evt.key() == Key::Enter {
                             let name = player_name.read().trim().to_string();
                             if !name.is_empty() {
@@ -571,6 +635,18 @@ fn NameInputOverlay(
                         } else if evt.key() == Key::Escape {
                             show_name_input.set(false);
                         }
+                    }
+                }
+                div { class: "button-row",
+                    button {
+                        class: "submit-btn",
+                        onclick: submit_score_handler,
+                        "Submit"
+                    }
+                    button {
+                        class: "skip-btn",
+                        onclick: move |_| show_name_input.set(false),
+                        "Skip"
                     }
                 }
                 p { class: "hint", "Press ENTER to submit, ESC to skip" }

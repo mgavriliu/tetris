@@ -2,7 +2,7 @@
 import init, { TetrisApp } from "../../pkg/tetris_core.js";
 
 // frontend/api.ts
-var API_BASE = "https://tetris-api.deno.dev/api";
+var API_BASE = "http://localhost:8000/api";
 async function getHighScores() {
   try {
     const response = await fetch(`${API_BASE}/scores`);

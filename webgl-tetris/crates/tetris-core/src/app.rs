@@ -95,37 +95,52 @@ impl TetrisApp {
             // Update game
             app.controller.update(delta_ms);
 
-            // Check for state changes
+            // Check for state changes and collect callback data
             let current_state = app.controller.state;
-            if current_state != app.last_state {
-                if let Some(ref callback) = app.on_state_change {
-                    let _ = callback.call2(
-                        &JsValue::NULL,
-                        &JsValue::from(state_to_u8(current_state)),
-                        &JsValue::from(state_to_u8(app.last_state)),
-                    );
-                }
+            let last_state = app.last_state;
+            let state_changed = current_state != last_state;
+            let state_callback = if state_changed {
                 app.last_state = current_state;
-            }
+                app.on_state_change.clone()
+            } else {
+                None
+            };
+
+            // Collect score callback data if playing
+            let score_callback = if current_state == GameState::Playing {
+                let (score, level, lines) = app.get_stats();
+                app.on_score_update.clone().map(|cb| (cb, score, level, lines))
+            } else {
+                None
+            };
 
             // Render if playing
             if current_state == GameState::Playing {
-                // Update score callback
-                if let Some(ref callback) = app.on_score_update {
-                    let (score, level, lines) = app.get_stats();
-                    let _ = callback.call3(
-                        &JsValue::NULL,
-                        &JsValue::from(score),
-                        &JsValue::from(level),
-                        &JsValue::from(lines),
-                    );
-                }
-
                 app.render();
             }
 
+            // Release borrow before calling callbacks (to avoid RefCell panic)
+            drop(app);
+
+            // Now call callbacks safely
+            if let Some(callback) = state_callback {
+                let _ = callback.call2(
+                    &JsValue::NULL,
+                    &JsValue::from(state_to_u8(current_state)),
+                    &JsValue::from(state_to_u8(last_state)),
+                );
+            }
+
+            if let Some((callback, score, level, lines)) = score_callback {
+                let _ = callback.call3(
+                    &JsValue::NULL,
+                    &JsValue::from(score),
+                    &JsValue::from(level),
+                    &JsValue::from(lines),
+                );
+            }
+
             // Request next frame
-            drop(app); // Release borrow before requesting frame
             let window = web_sys::window().unwrap();
             let _ = window.request_animation_frame(
                 f.borrow().as_ref().unwrap().as_ref().unchecked_ref(),
