@@ -2,7 +2,7 @@
 
 A modern Tetris implementation with a Rust/WebAssembly core and TypeScript frontend.
 
-**[Play on GitHub Pages](https://mgavriliu.github.io/tetris/docs/)**
+**[Play on GitHub Pages](https://mgavriliu.github.io/tetris/)**
 
 ## Features
 

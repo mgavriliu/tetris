@@ -8,7 +8,7 @@ Three modern Tetris implementations built with Rust/WebAssembly, each using a di
 | [webgl-tetris](./webgl-tetris/) | TypeScript    | WebGL/GLSL | Hardware-accelerated rendering     |
 | [diox-tetris](./diox-tetris/)   | Rust (Dioxus) | SVG        | Pure Rust frontend, no JS          |
 
-**[Play on GitHub Pages](https://mgavriliu.github.io/tetris/docs/)**
+**[Play on GitHub Pages](https://mgavriliu.github.io/tetris/)**
 
 ## Architecture
 

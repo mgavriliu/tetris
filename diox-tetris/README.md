@@ -2,6 +2,8 @@
 
 A modern Tetris implementation written in **pure Rust** using the Dioxus framework, compiled to WebAssembly.
 
+**[Play on GitHub Pages](https://mgavriliu.github.io/tetris/)**
+
 ## Features
 
 - **Pure Rust Frontend**: UI and game logic entirely in Rust using Dioxus reactive framework
@@ -75,8 +77,8 @@ dx build --release
 | `↓`               | Soft drop                |
 | `Space`           | Hard drop                |
 | `↑` / `X`         | Rotate clockwise         |
-| `Z`               | Rotate counter-clockwise |
-| `C`               | Hold piece               |
+| `Z` / `Ctrl`      | Rotate counter-clockwise |
+| `C` / `Shift`     | Hold piece               |
 | `P` / `Esc`       | Pause                    |
 | `R`               | Restart                  |
 | `Enter` / `Space` | Start game               |
