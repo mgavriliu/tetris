@@ -7,7 +7,7 @@ export interface Score {
 }
 
 // Shared API endpoint for all Tetris games
-const API_BASE = "https://tetris-api.deno.dev/api";
+const API_BASE = "https://tetris-api.mgavriliu.deno.net/api";
 
 export async function getHighScores(): Promise<Score[]> {
   try {

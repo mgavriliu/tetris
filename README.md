@@ -26,7 +26,7 @@ tetris/
 
 All three games share a common high scores API deployed on Deno Deploy:
 
-- **Endpoint**: `https://tetris-api.deno.dev/api`
+- **Endpoint**: `https://tetris-api.mgavriliu.deno.net/api`
 - **Storage**: Deno KV for persistent scores
 - **CORS**: Enabled for cross-origin requests
 

@@ -14,7 +14,7 @@ const CELL_SIZE: u32 = 30;
 const BOARD_WIDTH: usize = 10;
 const BOARD_HEIGHT: usize = 20;
 // Shared API endpoint for all Tetris games
-const API_BASE: &str = "https://tetris-api.deno.dev/api";
+const API_BASE: &str = "https://tetris-api.mgavriliu.deno.net/api";
 
 #[derive(Clone, Debug, Serialize, Deserialize, PartialEq)]
 pub struct Score {
