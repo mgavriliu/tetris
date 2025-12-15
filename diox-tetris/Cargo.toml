@@ -1,0 +1,20 @@
+[package]
+name = "diox-tetris"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+dioxus = { version = "0.7", features = ["web"] }
+rand = { version = "0.8", features = ["small_rng"] }
+getrandom = { version = "0.2", features = ["js"] }
+gloo-timers = { version = "0.3", features = ["futures"] }
+gloo-net = "0.6"
+wasm-bindgen = "0.2"
+wasm-bindgen-futures = "0.4"
+web-sys = { version = "0.3", features = ["Window", "Document", "KeyboardEvent"] }
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+
+[profile.release]
+lto = true
+opt-level = "z"

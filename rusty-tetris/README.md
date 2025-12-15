@@ -1,15 +1,13 @@
 # Rusty Tetris
 
-A modern Tetris implementation with a Rust/WebAssembly core and TypeScript frontend, served by a Deno backend.
-
-**[Play Live on Deno Deploy](https://rusty-tetris.mgavriliu.deno.net/)** | **[GitHub Pages](https://mgavriliu.github.io/rusty-tetris/)**
+A modern Tetris implementation with a Rust/WebAssembly core and TypeScript frontend.
 
 ## Features
 
-- **Rust/WASM Game Engine**: Core game logic written in Rust, compiled to WebAssembly for near-native performance in the browser
+- **Rust/WASM Game Engine**: Core game logic written in Rust, compiled to WebAssembly
 - **Modern Tetris Mechanics**: 7-bag randomizer, wall kicks (SRS), ghost piece, hold piece, hard/soft drop
 - **NES-Style Speed Curve**: Progressive difficulty with level-based speed increases
-- **High Score System**: Persistent global leaderboard using Deno KV
+- **High Score System**: Global leaderboard via shared API
 - **SVG Rendering**: Smooth, scalable graphics using SVG elements
 - **Responsive Controls**: Keyboard input with DAS (Delayed Auto Shift) support
 
@@ -33,11 +31,8 @@ rusty-tetris/
 │   ├── main.ts               # Game loop & SVG rendering
 │   ├── api.ts                # High score API client
 │   └── dist/                 # Bundled output
-├── server/
-│   └── main.ts               # Deno/Oak HTTP server with KV storage
 ├── pkg/                      # WASM build output
-├── deno.json                 # Deno tasks & config
-└── Cargo.toml                # Rust workspace
+└── deno.json                 # Build tasks
 ```
 
 ### Component Overview
@@ -66,78 +61,34 @@ TypeScript application bundled with esbuild:
 - Handles keyboard input and maps to Rust key codes
 - Manages UI overlays (start screen, pause, game over)
 
-#### Server (`server/`)
-
-Deno application using Oak framework:
-
-- Serves static files (HTML, JS, WASM)
-- REST API for high scores (`GET/POST /api/scores`)
-- Scores persisted using Deno KV (works locally and on Deno Deploy)
-
-## Deployment
-
-### Deno Deploy (Recommended)
-
-The easiest way to deploy is via [Deno Deploy](https://deno.com/deploy):
-
-1. Go to [dash.deno.com](https://dash.deno.com)
-2. Click "New Project"
-3. Connect your GitHub repository
-4. Set the entrypoint to `server/main.ts`
-5. Deploy!
-
-The app uses Deno KV for persistent high score storage, which is automatically provisioned on Deno Deploy.
-
-### Manual Deployment
-
-For other platforms, ensure you have:
-- Deno runtime installed
-- The `pkg/` and `frontend/dist/` directories (pre-built and included in repo)
-
-```bash
-deno run --allow-net --allow-read --allow-env --unstable-kv server/main.ts
-```
-
 ## Local Development
 
 ### Prerequisites
 
 - [Rust](https://rustup.rs/) (1.70+) - only needed to modify game engine
 - [wasm-pack](https://rustwasm.github.io/wasm-pack/installer/) - only needed to rebuild WASM
-- [Deno](https://deno.land/) (1.40+)
 
 ### Quick Start
 
-The repository includes pre-built WASM and frontend bundles, so you can run immediately:
+The repository includes pre-built WASM and frontend bundles:
 
 ```bash
-deno task dev
+# Serve static files
+python3 -m http.server 8080 -d frontend
+# Open http://localhost:8080
 ```
-
-Then open http://localhost:8000
 
 ### Full Build (if modifying Rust code)
 
 ```bash
-# Install build tools (first time only)
-curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
-cargo install wasm-pack
-
-# Build everything and start server
-deno task start
-```
-
-### Manual Build Steps
-
-```bash
 # Build WASM module
-cd crates/tetris-core && wasm-pack build --target web --out-dir ../../pkg
+deno task build:wasm
 
 # Bundle frontend
-deno run --allow-read --allow-write --allow-env npm:esbuild frontend/main.ts --bundle --format=esm --outdir=frontend/dist
+deno task build:frontend
 
-# Start server
-deno task dev
+# Or build both
+deno task build
 ```
 
 ## Controls
@@ -167,7 +118,9 @@ deno task dev
 
 Level increases every 10 lines cleared.
 
-## API Endpoints
+## API
+
+High scores are managed by a shared API server. See the [root README](../README.md) for deployment instructions.
 
 | Endpoint | Method | Description |
 |----------|--------|-------------|
@@ -204,7 +157,6 @@ Level increases every 10 lines cleared.
 - SRS (Super Rotation System) wall kicks are implemented for all pieces except O
 - Ghost piece rendering shows where the current piece will land
 - The 7-bag randomizer ensures fair piece distribution
-- Deno KV provides persistent storage that works both locally and on Deno Deploy
 
 ## License
 

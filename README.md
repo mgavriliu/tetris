@@ -1,44 +1,57 @@
-# Tetris
+# Tetris Collection
 
-Two modern Tetris implementations built with Rust/WebAssembly and Deno, differing primarily in rendering approach.
+Three modern Tetris implementations built with Rust/WebAssembly, each using a different rendering approach.
 
-| Project                         | Rendering         | Live Demo                                                                                                            |
-| ------------------------------- | ----------------- | -------------------------------------------------------------------------------------------------------------------- |
-| [rusty-tetris](./rusty-tetris/) | SVG (TypeScript)  | [Deno Deploy](https://rusty-tetris.mgavriliu.deno.net/) \| [GitHub Pages](https://mgavriliu.github.io/rusty-tetris/) |
-| [webgl-tetris](./webgl-tetris/) | WebGL (Rust/GLSL) | [Deno Deploy](https://webgl-tetris.mgavriliu.deno.net/) \| [GitHub Pages](https://mgavriliu.github.io/webgl-tetris/) |
-
-## Key Differences
-
-| Aspect              | rusty-tetris                         | webgl-tetris                               |
-| ------------------- | ------------------------------------ | ------------------------------------------ |
-| **Rendering**       | SVG elements via TypeScript          | WebGL with GLSL shaders in Rust            |
-| **Game Loop**       | JavaScript (`requestAnimationFrame`) | Rust (`requestAnimationFrame` via web-sys) |
-| **Frontend Size**   | ~25KB JS                             | ~9KB JS                                    |
-| **WASM Size**       | ~60KB                                | ~80KB (includes WebGL renderer)            |
-| **TypeScript Role** | Full rendering + game loop           | DOM/overlay management only (~200 lines)   |
-
-## Shared Features
-
-Both implementations share identical game mechanics:
-
-- **Rust/WASM Game Engine**: Core logic in Rust compiled to WebAssembly
-- **Modern Tetris Mechanics**: 7-bag randomizer, SRS wall kicks, ghost piece, hold piece
-- **NES-Style Speed Curve**: Progressive difficulty with level-based speed increases
-- **High Score System**: Persistent global leaderboard via Deno KV
-- **DAS/ARR Input**: Delayed Auto Shift (167ms) and Auto Repeat Rate (33ms)
+| Project                         | Frontend      | Rendering  | Description                        |
+| ------------------------------- | ------------- | ---------- | ---------------------------------- |
+| [rusty-tetris](./rusty-tetris/) | TypeScript    | SVG        | Classic approach with JS game loop |
+| [webgl-tetris](./webgl-tetris/) | TypeScript    | WebGL/GLSL | Hardware-accelerated rendering     |
+| [diox-tetris](./diox-tetris/)   | Rust (Dioxus) | SVG        | Pure Rust frontend, no JS          |
 
 ## Architecture
 
-Both projects follow the same structure:
+```
+tetris/
+├── server/                # Shared API server (Deno Deploy)
+│   └── main.ts            # High scores API with Deno KV
+├── rusty-tetris/          # SVG + TypeScript implementation
+├── webgl-tetris/          # WebGL + TypeScript implementation
+├── diox-tetris/           # Pure Rust + Dioxus implementation
+└── docs/                  # GitHub Pages (game selector)
+```
 
+### Shared API
+
+All three games share a common high scores API deployed on Deno Deploy:
+
+- **Endpoint**: `https://tetris-api.deno.dev/api`
+- **Storage**: Deno KV for persistent scores
+- **CORS**: Enabled for cross-origin requests
+
+```bash
+# Deploy the shared API
+cd server
+deployctl deploy --project=tetris-api main.ts
 ```
-project/
-├── crates/tetris-core/    # Rust WASM game engine
-├── frontend/              # TypeScript (UI, API client)
-├── server/                # Deno HTTP server + KV storage
-├── pkg/                   # WASM build output
-└── deno.json              # Deno tasks
-```
+
+## Comparison
+
+| Aspect            | rusty-tetris   | webgl-tetris | diox-tetris           |
+| ----------------- | -------------- | ------------ | --------------------- |
+| **Frontend**      | TypeScript     | TypeScript   | Rust (Dioxus)         |
+| **Rendering**     | SVG via DOM    | WebGL/GLSL   | Dioxus RSX → SVG      |
+| **Game Loop**     | JavaScript RAF | Rust RAF     | Rust async            |
+| **Frontend Size** | ~25KB JS       | ~9KB JS      | 0 JS (generated only) |
+| **WASM Size**     | ~60KB          | ~80KB        | ~2MB (includes UI)    |
+
+## Shared Features
+
+All implementations share identical game mechanics:
+
+- **Modern Tetris Mechanics**: 7-bag randomizer, SRS wall kicks, ghost piece, hold piece
+- **NES-Style Speed Curve**: Progressive difficulty with level-based speed increases
+- **High Score System**: Global leaderboard via shared API
+- **DAS/ARR Input**: Delayed Auto Shift (167ms) and Auto Repeat Rate (33ms)
 
 ## Controls
 
@@ -66,19 +79,59 @@ project/
 
 Level increases every 10 lines.
 
-## Quick Start
+## Local Development
+
+### Run the Game Selector
 
 ```bash
-cd rusty-tetris  # or webgl-tetris
-deno task dev
-# Open http://localhost:8000
+# From project root, start a static file server
+python3 -m http.server 8080
+# Open http://localhost:8080/docs/index.html
 ```
 
-### Prerequisites (for modifications)
+### Run Individual Games
 
-- [Deno](https://deno.land/) 1.40+
-- [Rust](https://rustup.rs/) 1.70+ (only for engine changes)
+```bash
+# rusty-tetris or webgl-tetris (static files)
+cd rusty-tetris
+python3 -m http.server 8080 -d frontend
+# Open http://localhost:8080
+
+# diox-tetris (requires Dioxus CLI)
+cd diox-tetris
+dx serve
+# Open http://localhost:8080
+```
+
+### Run the API Server Locally
+
+```bash
+cd server
+deno task dev
+# API available at http://localhost:8000
+```
+
+## Deployment
+
+### GitHub Pages (Static Frontends)
+
+All three games are static and can be hosted on GitHub Pages. Configure Pages to serve from the repo root.
+
+### Deno Deploy (API Server)
+
+```bash
+cd server
+deployctl deploy --project=tetris-api main.ts
+```
+
+After deployment, update `API_BASE` in each frontend if using a different project name.
+
+## Prerequisites
+
+- [Deno](https://deno.land/) 1.40+ (for API server)
+- [Rust](https://rustup.rs/) 1.70+ (only for WASM modifications)
 - [wasm-pack](https://rustwasm.github.io/wasm-pack/installer/) (only for WASM rebuild)
+- [Dioxus CLI](https://dioxuslabs.com/) (only for diox-tetris development)
 
 ## License
 

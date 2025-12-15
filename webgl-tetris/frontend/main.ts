@@ -1,4 +1,4 @@
-import init, { TetrisApp } from "../pkg/tetris_core.js";
+import init, { TetrisApp } from "../../pkg/tetris_core.js";
 import { getHighScores, submitScore, type Score } from "./api.ts";
 
 // Game states
@@ -26,7 +26,7 @@ let app: TetrisApp;
 async function main() {
   try {
     console.log("Initializing WASM...");
-    await init("/pkg/tetris_core_bg.wasm");
+    await init("../pkg/tetris_core_bg.wasm");
 
     console.log("Creating UI...");
     const { boardCanvas, nextCanvas, holdCanvas } = createUI();

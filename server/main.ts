@@ -1,11 +1,6 @@
 /// <reference lib="deno.ns" />
 /// <reference lib="deno.unstable" />
 
-import { dirname, fromFileUrl, join } from "https://deno.land/std@0.208.0/path/mod.ts";
-
-const __dirname = dirname(fromFileUrl(import.meta.url));
-const rootDir = join(__dirname, "..");
-
 interface Score {
   name: string;
   score: number;
@@ -54,12 +49,10 @@ function isValidScore(obj: unknown): obj is Omit<Score, "timestamp"> {
   );
 }
 
-const MIME_TYPES: Record<string, string> = {
-  ".html": "text/html",
-  ".js": "application/javascript",
-  ".wasm": "application/wasm",
-  ".css": "text/css",
-  ".json": "application/json",
+const CORS_HEADERS = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+  "Access-Control-Allow-Headers": "Content-Type",
 };
 
 async function handler(req: Request): Promise<Response> {
@@ -70,14 +63,19 @@ async function handler(req: Request): Promise<Response> {
 
   // Health check
   if (path === "/health") {
-    return Response.json({ status: "ok" });
+    return Response.json({ status: "ok" }, { headers: CORS_HEADERS });
+  }
+
+  // CORS preflight
+  if (req.method === "OPTIONS") {
+    return new Response(null, { status: 204, headers: CORS_HEADERS });
   }
 
   // API: Get scores
   if (path === "/api/scores" && req.method === "GET") {
     const scores = await loadScores();
     scores.sort((a, b) => b.score - a.score);
-    return Response.json(scores.slice(0, 10));
+    return Response.json(scores.slice(0, 10), { headers: CORS_HEADERS });
   }
 
   // API: Submit score
@@ -85,7 +83,10 @@ async function handler(req: Request): Promise<Response> {
     try {
       const body = await req.json();
       if (!isValidScore(body)) {
-        return Response.json({ error: "Invalid score data" }, { status: 400 });
+        return Response.json(
+          { error: "Invalid score data" },
+          { status: 400, headers: CORS_HEADERS }
+        );
       }
       const score: Score = {
         name: body.name.trim().substring(0, 20),
@@ -95,44 +96,27 @@ async function handler(req: Request): Promise<Response> {
         timestamp: Date.now(),
       };
       await saveScore(score);
-      return Response.json({ success: true }, { status: 201 });
+      return Response.json(
+        { success: true },
+        { status: 201, headers: CORS_HEADERS }
+      );
     } catch (e) {
       console.error("Error submitting score:", e);
-      return Response.json({ error: "Internal server error" }, { status: 500 });
+      return Response.json(
+        { error: "Internal server error" },
+        { status: 500, headers: CORS_HEADERS }
+      );
     }
   }
 
-  // Static files
-  try {
-    let filePath: string;
-
-    if (path === "/" || path === "/index.html") {
-      filePath = join(rootDir, "frontend/index.html");
-    } else if (path.startsWith("/pkg/")) {
-      filePath = join(rootDir, path.slice(1));
-    } else if (path.startsWith("/dist/")) {
-      filePath = join(rootDir, "frontend", path);
-    } else {
-      filePath = join(rootDir, "frontend", path);
-    }
-
-    const file = await Deno.readFile(filePath);
-    const ext = filePath.substring(filePath.lastIndexOf("."));
-    const contentType = MIME_TYPES[ext] || "application/octet-stream";
-
-    return new Response(file, {
-      headers: {
-        "Content-Type": contentType,
-        "X-Frame-Options": "ALLOWALL",
-      },
-    });
-  } catch (e) {
-    console.error(`Error serving ${path}:`, e);
-    return new Response("Not Found", { status: 404 });
-  }
+  // Not found
+  return Response.json(
+    { error: "Not found" },
+    { status: 404, headers: CORS_HEADERS }
+  );
 }
 
 const port = parseInt(Deno.env.get("PORT") ?? "8000");
-console.log(`Tetris server running on http://localhost:${port}`);
+console.log(`Tetris API server running on http://localhost:${port}`);
 
 Deno.serve({ port }, handler);

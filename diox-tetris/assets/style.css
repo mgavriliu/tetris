@@ -1,0 +1,208 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    background: #0a0a1a;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    font-family: "Segoe UI", system-ui, sans-serif;
+    color: #fff;
+}
+
+.container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    outline: none;
+    width: 100%;
+}
+
+header {
+    padding: 20px;
+    text-align: center;
+}
+
+h1 {
+    font-size: 2rem;
+    color: #00f5ff;
+    text-shadow: 0 0 20px #00f5ff;
+    letter-spacing: 5px;
+    margin-bottom: 10px;
+}
+
+.subtitle {
+    color: #888;
+    font-size: 0.9rem;
+}
+
+.game-area {
+    display: flex;
+    gap: 20px;
+    align-items: flex-start;
+    padding: 20px;
+}
+
+.side-panel {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    min-width: 120px;
+}
+
+.panel-section {
+    background: rgba(30, 30, 50, 0.5);
+    border: 1px solid #4a4a6a;
+    border-radius: 8px;
+    padding: 10px;
+}
+
+.panel-label {
+    color: #888;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    margin-bottom: 8px;
+}
+
+.stat-value {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: #00f5ff;
+    font-family: monospace;
+}
+
+.preview-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 48px;
+}
+
+.preview-svg {
+    background: rgba(26, 26, 46, 0.5);
+    border-radius: 4px;
+}
+
+.board-container {
+    border: 3px solid #4a4a6a;
+    border-radius: 8px;
+    box-shadow: 0 0 30px rgba(100, 100, 200, 0.3);
+    background: #0a0a1a;
+}
+
+.tetris-board {
+    display: block;
+}
+
+footer {
+    padding: 20px;
+    text-align: center;
+    color: #666;
+    font-size: 0.8rem;
+}
+
+footer a {
+    color: #00f5ff;
+    text-decoration: none;
+}
+
+footer a:hover {
+    text-decoration: underline;
+}
+
+/* High Scores */
+.scores-list {
+    font-family: monospace;
+    font-size: 0.75rem;
+}
+
+.score-row {
+    display: flex;
+    gap: 5px;
+    padding: 2px 0;
+    color: #ccc;
+}
+
+.score-row .rank {
+    color: #888;
+    width: 20px;
+}
+
+.score-row .name {
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.score-row .pts {
+    color: #00f5ff;
+}
+
+.no-scores {
+    color: #666;
+    text-align: center;
+}
+
+/* Name Input Overlay */
+.board-container {
+    position: relative;
+}
+
+.name-input-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.85);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px;
+}
+
+.name-input-box {
+    text-align: center;
+    padding: 20px;
+}
+
+.name-input-box h2 {
+    color: #00f5ff;
+    font-size: 1.5rem;
+    margin-bottom: 10px;
+    text-shadow: 0 0 10px #00f5ff;
+}
+
+.name-input-box p {
+    color: #fff;
+    margin-bottom: 15px;
+}
+
+.name-input-box input {
+    background: #1a1a2e;
+    border: 2px solid #4a4a6a;
+    border-radius: 4px;
+    color: #fff;
+    font-size: 1rem;
+    padding: 8px 12px;
+    width: 200px;
+    text-align: center;
+    outline: none;
+}
+
+.name-input-box input:focus {
+    border-color: #00f5ff;
+    box-shadow: 0 0 10px rgba(0, 245, 255, 0.3);
+}
+
+.name-input-box .hint {
+    color: #666;
+    font-size: 0.75rem;
+    margin-top: 10px;
+}

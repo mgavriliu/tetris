@@ -1,8 +1,8 @@
 // frontend/main.ts
-import init, { TetrisApp } from "../pkg/tetris_core.js";
+import init, { TetrisApp } from "../../pkg/tetris_core.js";
 
 // frontend/api.ts
-var API_BASE = "/api";
+var API_BASE = "https://tetris-api.deno.dev/api";
 async function getHighScores() {
   try {
     const response = await fetch(`${API_BASE}/scores`);
@@ -49,7 +49,7 @@ var app;
 async function main() {
   try {
     console.log("Initializing WASM...");
-    await init("/pkg/tetris_core_bg.wasm");
+    await init("../pkg/tetris_core_bg.wasm");
     console.log("Creating UI...");
     const { boardCanvas, nextCanvas, holdCanvas } = createUI();
     console.log("Creating TetrisApp...");

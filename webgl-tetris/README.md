@@ -1,8 +1,6 @@
 # WebGL Tetris
 
-A modern Tetris implementation with a Rust/WebAssembly core featuring **WebGL rendering**, served by a Deno backend.
-
-**[Play Live on Deno Deploy](https://webgl-tetris--master.mgavriliu.deno.net/)** | **[GitHub Pages](https://mgavriliu.github.io/webgl-tetris/)**
+A modern Tetris implementation with a Rust/WebAssembly core featuring **WebGL rendering** with custom GLSL shaders.
 
 ## Features
 
@@ -10,7 +8,7 @@ A modern Tetris implementation with a Rust/WebAssembly core featuring **WebGL re
 - **WebGL Rendering**: Hardware-accelerated graphics with custom GLSL shaders
 - **Modern Tetris Mechanics**: 7-bag randomizer, wall kicks (SRS), ghost piece, hold piece, hard/soft drop
 - **NES-Style Speed Curve**: Progressive difficulty with level-based speed increases
-- **High Score System**: Persistent global leaderboard using Deno KV
+- **High Score System**: Global leaderboard via shared API
 - **Responsive Controls**: Keyboard input with DAS (Delayed Auto Shift) support
 
 ## Architecture
@@ -35,11 +33,8 @@ webgl-tetris/
 │   ├── main.ts               # DOM setup & overlay management
 │   ├── api.ts                # High score API client
 │   └── dist/                 # Bundled output
-├── server/
-│   └── main.ts               # Deno HTTP server with KV storage
 ├── pkg/                      # WASM build output
-├── deno.json                 # Deno tasks & config
-└── Cargo.toml                # Rust workspace
+└── deno.json                 # Build tasks
 ```
 
 ### Component Overview
@@ -67,118 +62,96 @@ Minimal TypeScript (~200 lines) handling only:
 - High scores API calls
 - Input event forwarding to Rust
 
-#### Server (`server/`)
-
-Deno application:
-
-- Serves static files (HTML, JS, WASM)
-- REST API for high scores (`GET/POST /api/scores`)
-- Scores persisted using Deno KV
-
-## Deployment
-
-### Deno Deploy (Recommended)
-
-1. Go to [dash.deno.com](https://dash.deno.com)
-2. Click "New Project"
-3. Connect your GitHub repository
-4. Set the entrypoint to `server/main.ts`
-5. Deploy!
-
-### Manual Deployment
-
-```bash
-deno run --allow-net --allow-read --allow-env --unstable-kv server/main.ts
-```
-
 ## Local Development
 
 ### Prerequisites
 
 - [Rust](https://rustup.rs/) (1.70+) - only needed to modify game engine
 - [wasm-pack](https://rustwasm.github.io/wasm-pack/installer/) - only needed to rebuild WASM
-- [Deno](https://deno.land/) (1.40+)
 
 ### Quick Start
 
 The repository includes pre-built WASM and frontend bundles:
 
 ```bash
-deno task dev
+# Serve static files
+python3 -m http.server 8080 -d frontend
+# Open http://localhost:8080
 ```
-
-Then open http://localhost:8000
 
 ### Full Build (if modifying Rust code)
 
 ```bash
-# Build everything and start server
-deno task start
-```
-
-### Manual Build Steps
-
-```bash
 # Build WASM module
-cd crates/tetris-core && wasm-pack build --target web --out-dir ../../pkg
+deno task build:wasm
 
 # Bundle frontend
-npx esbuild frontend/main.ts --bundle --format=esm --outdir=frontend/dist '--external:../pkg/*'
+deno task build:frontend
 
-# Start server
-deno task dev
+# Or build both
+deno task build
 ```
 
 ## Controls
 
-| Key               | Action                          |
-| ----------------- | ------------------------------- |
-| `←` `→`           | Move left/right                 |
-| `↓`               | Soft drop                       |
-| `Space`           | Hard drop                       |
-| `↑` / `X`         | Rotate clockwise                |
-| `Z` / `Ctrl`      | Rotate counter-clockwise        |
-| `C` / `Shift`     | Hold piece                      |
-| `P` / `Esc`       | Pause                           |
-| `R`               | Restart (when paused/game over) |
-| `Enter` / `Space` | Start game                      |
+| Key | Action |
+|-----|--------|
+| `←` `→` | Move left/right |
+| `↓` | Soft drop |
+| `Space` | Hard drop |
+| `↑` / `X` | Rotate clockwise |
+| `Z` / `Ctrl` | Rotate counter-clockwise |
+| `C` / `Shift` | Hold piece |
+| `P` / `Esc` | Pause |
+| `R` | Restart (when paused/game over) |
+| `Enter` / `Space` | Start game |
 
 ## Scoring
 
-| Action           | Points      |
-| ---------------- | ----------- |
-| Soft drop        | 1 per cell  |
-| Hard drop        | 2 per cell  |
-| Single line      | 100 × level |
-| Double           | 300 × level |
-| Triple           | 500 × level |
+| Action | Points |
+|--------|--------|
+| Soft drop | 1 per cell |
+| Hard drop | 2 per cell |
+| Single line | 100 × level |
+| Double | 300 × level |
+| Triple | 500 × level |
 | Tetris (4 lines) | 800 × level |
 
 Level increases every 10 lines cleared.
+
+## API
+
+High scores are managed by a shared API server. See the [root README](../README.md) for deployment instructions.
+
+| Endpoint | Method | Description |
+|----------|--------|-------------|
+| `/api/scores` | GET | Get top 10 high scores |
+| `/api/scores` | POST | Submit a new score |
 
 ## Technical Details
 
 ### WebGL Rendering
 
-Custom GLSL shaders handle:
+The renderer uses two shader programs:
 
-- **Cell Shader**: Renders tetromino blocks with rounded corners and opacity
-- **Grid Shader**: Renders the background grid with cell borders
+1. **Cell Shader**: Renders filled tetromino cells with per-cell colors
+2. **Grid Shader**: Renders the background grid lines
 
-All rendering runs in Rust via `web-sys` WebGL bindings.
+All rendering state is computed in Rust and passed to WebGL via typed arrays.
 
 ### Build Outputs
 
-- `pkg/`: Contains `tetris_core.js`, `tetris_core_bg.wasm`, and TypeScript definitions
+- `pkg/`: Contains `tetris_core.js`, `tetris_core_bg.wasm` (~80KB)
 - `frontend/dist/`: Bundled JavaScript (~9KB)
-- WASM size: ~80KB (includes WebGL renderer)
 
-### Implementation Notes
+### Key Differences from rusty-tetris
 
-- Game loop runs in Rust using `requestAnimationFrame`
-- Input is processed entirely in Rust with DAS/ARR support
-- State changes trigger JavaScript callbacks for DOM updates
-- The 7-bag randomizer ensures fair piece distribution
+| Aspect | webgl-tetris | rusty-tetris |
+|--------|--------------|--------------|
+| **Rendering** | WebGL/GLSL in Rust | SVG via TypeScript |
+| **Game Loop** | Rust (`requestAnimationFrame`) | JavaScript |
+| **Frontend Size** | ~9KB | ~25KB |
+| **WASM Size** | ~80KB | ~60KB |
 
 ## License
 

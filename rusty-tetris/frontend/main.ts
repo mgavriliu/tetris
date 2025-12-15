@@ -1,4 +1,4 @@
-import init, { Tetris, get_color } from "../pkg/tetris_core.js";
+import init, { Tetris, get_color } from "../../pkg/tetris_core.js";
 import { getHighScores, submitScore, type Score } from "./api.ts";
 
 // Constants
@@ -51,7 +51,7 @@ let lastTime = 0;
 let lastState = STATE_IDLE;
 
 async function main() {
-  await init("/pkg/tetris_core_bg.wasm");
+  await init("../pkg/tetris_core_bg.wasm");
   tetris = new Tetris();
 
   createUI();

@@ -1,0 +1,17 @@
+[application]
+name = "diox-tetris"
+
+[web.app]
+title = "Dioxus Tetris"
+
+[web.watcher]
+reload_html = true
+watch_path = ["src"]
+
+[web.resource]
+style = []
+script = []
+
+[web.resource.dev]
+style = []
+script = []

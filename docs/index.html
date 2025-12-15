@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Tetris</title>
+    <title>Tetris Collection</title>
     <style>
       * {
         margin: 0;
@@ -41,19 +41,23 @@
 
       .toggle-container {
         display: flex;
-        gap: 20px;
+        gap: 15px;
         margin: 20px 0;
+        flex-wrap: wrap;
+        justify-content: center;
       }
 
       .toggle-option {
         display: flex;
+        flex-direction: column;
         align-items: center;
-        gap: 8px;
+        gap: 6px;
         cursor: pointer;
-        padding: 10px 20px;
+        padding: 12px 18px;
         border: 2px solid #4a4a6a;
         border-radius: 8px;
         transition: all 0.3s ease;
+        min-width: 120px;
       }
 
       .toggle-option:hover {
@@ -70,33 +74,18 @@
         display: none;
       }
 
-      .radio-circle {
-        width: 18px;
-        height: 18px;
-        border: 2px solid #4a4a6a;
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        transition: all 0.3s ease;
+      .option-title {
+        font-weight: bold;
+        color: #fff;
       }
 
-      .toggle-option.active .radio-circle {
-        border-color: #00f5ff;
+      .option-tech {
+        font-size: 0.7rem;
+        color: #888;
       }
 
-      .radio-circle::after {
-        content: "";
-        width: 8px;
-        height: 8px;
-        border-radius: 50%;
-        background: #00f5ff;
-        opacity: 0;
-        transition: opacity 0.3s ease;
-      }
-
-      .toggle-option.active .radio-circle::after {
-        opacity: 1;
+      .toggle-option.active .option-title {
+        color: #00f5ff;
       }
 
       .game-container {
@@ -135,26 +124,31 @@
   <body>
     <header>
       <h1>TETRIS</h1>
-      <p class="subtitle">Rust/WASM + TypeScript + Deno</p>
+      <p class="subtitle">A collection of Tetris implementations</p>
     </header>
 
     <div class="toggle-container">
-      <label class="toggle-option active" id="rusty-option">
+      <label class="toggle-option active" data-game="rusty">
         <input type="radio" name="game" value="rusty" checked />
-        <span class="radio-circle"></span>
-        <span>Rusty Tetris</span>
+        <span class="option-title">Rusty Tetris</span>
+        <span class="option-tech">Rust/WASM + TypeScript</span>
       </label>
-      <label class="toggle-option" id="webgl-option">
+      <label class="toggle-option" data-game="webgl">
         <input type="radio" name="game" value="webgl" />
-        <span class="radio-circle"></span>
-        <span>WebGL Tetris</span>
+        <span class="option-title">WebGL Tetris</span>
+        <span class="option-tech">Rust/WASM + WebGL</span>
+      </label>
+      <label class="toggle-option" data-game="dioxus">
+        <input type="radio" name="game" value="dioxus" />
+        <span class="option-title">Dioxus Tetris</span>
+        <span class="option-tech">Pure Rust + Dioxus</span>
       </label>
     </div>
 
     <div class="game-container">
       <iframe
         id="game-frame"
-        src="https://rusty-tetris.mgavriliu.deno.net/"
+        src="../rusty-tetris/frontend/index.html"
         width="700"
         height="720"
         scrolling="no"
@@ -166,29 +160,31 @@
 
     <footer>
       <p>
-        Built with Rust, WebAssembly, TypeScript, and Deno |
+        Built with Rust, WebAssembly, and Dioxus |
         <a href="https://github.com/mgavriliu/tetris">View Source on GitHub</a>
       </p>
     </footer>
 
     <script>
       const games = {
-        rusty: "https://rusty-tetris.mgavriliu.deno.net/",
-        webgl: "https://webgl-tetris.mgavriliu.deno.net/",
+        rusty: "../rusty-tetris/frontend/index.html",
+        webgl: "../webgl-tetris/frontend/index.html",
+        dioxus: "../diox-tetris/target/dx/diox-tetris/debug/web/public/index.html",
       };
 
       const frame = document.getElementById("game-frame");
-      const rustyOption = document.getElementById("rusty-option");
-      const webglOption = document.getElementById("webgl-option");
+      const options = document.querySelectorAll(".toggle-option");
 
       function selectGame(game) {
         frame.src = games[game];
-        rustyOption.classList.toggle("active", game === "rusty");
-        webglOption.classList.toggle("active", game === "webgl");
+        options.forEach((opt) => {
+          opt.classList.toggle("active", opt.dataset.game === game);
+        });
       }
 
-      rustyOption.addEventListener("click", () => selectGame("rusty"));
-      webglOption.addEventListener("click", () => selectGame("webgl"));
+      options.forEach((opt) => {
+        opt.addEventListener("click", () => selectGame(opt.dataset.game));
+      });
     </script>
   </body>
 </html>

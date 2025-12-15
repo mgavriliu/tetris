@@ -1,11 +1,8 @@
 {
-  "unstable": ["kv"],
   "tasks": {
-    "dev": "deno run --allow-net --allow-read --allow-write --allow-env --unstable-kv server/main.ts",
     "build:wasm": "cd crates/tetris-core && wasm-pack build --target web --out-dir ../../pkg",
-    "build:frontend": "npx esbuild frontend/main.ts --bundle --format=esm --outdir=frontend/dist '--external:../pkg/*'",
-    "build": "deno task build:wasm && deno task build:frontend",
-    "start": "deno task build && deno task dev"
+    "build:frontend": "npx esbuild frontend/main.ts --bundle --format=esm --outdir=frontend/dist '--external:../../pkg/*'",
+    "build": "deno task build:wasm && deno task build:frontend"
   },
   "imports": {},
   "compilerOptions": {
